@@ -1,0 +1,1 @@
+RDF_STORE_ENDPOINT = 'https://dbpedia.org/sparql'
