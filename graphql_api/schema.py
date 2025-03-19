@@ -4,22 +4,26 @@ from middleware.query_executor import execute_sparql_query
 query = QueryType()
 
 @query.field("availableClasses")
-def resolve_available_classes(*_):
+def resolve_available_classes(*_, namespaceFilter: str = None):
     """
-    Recupera tutte le classi RDF disponibili e restituisce i link completi.
+    Recupera tutte le classi RDF disponibili e consente il filtraggio per namespace (case insensitive).
     """
     sparql_query = """
     SELECT DISTINCT ?class WHERE {
         ?s a ?class .
     }
     """
-    print("\nGenerated SPARQL Query:\n", sparql_query)
     sparql_results = execute_sparql_query(sparql_query)
-
     if not sparql_results:
         return []
-
-    return [result["class"]["value"] for result in sparql_results if "class" in result]
+    
+    classes = [result["class"]["value"] for result in sparql_results if "class" in result]
+    
+    if namespaceFilter:
+        namespaceFilter = namespaceFilter.lower()  # Convertiamo tutto in lowercase
+        classes = [cls for cls in classes if namespaceFilter in cls.lower()]
+    
+    return classes
 
 
 @query.field("getDynamicGraphQLType")

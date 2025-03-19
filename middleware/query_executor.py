@@ -1,5 +1,9 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
-from config import RDF_STORE_ENDPOINT as endpoint
+import os
+
+endpoint = os.getenv("SPARQL_ENDPOINT", "https://dbpedia.org/sparql")
+
+
 
 def execute_sparql_query(query: str):
     """
