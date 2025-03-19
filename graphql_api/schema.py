@@ -56,10 +56,10 @@ def resolve_get_dynamic_graphql_type(*_, className: str):
 
 
 @query.field("searchEntity")
-def resolve_search_entity(
-    _, info, className: str, filters: list = None, optionalFilters: list = None, 
-    unions: list = None, orderBy: list = None, distinct: bool = False, limit: int = None, offset: int = None
-):
+def resolve_search_entity(_, info, className: str, filters: list = None, optionalFilters: list = None, 
+    notExistsFilters: list = None, unions: list = None, orderBy: list = None, distinct: bool = False, 
+    limit: int = None, offset: int = None):
+
     """
     Genera una query SPARQL dinamica per qualsiasi classe RDF, supportando:
     - Filtri (FILTER)
@@ -95,9 +95,22 @@ def resolve_search_entity(
                 if "birthDate" in prop or "date" in prop:
                     filter_conditions.append(f"{var_name} {op} \"{val}\"^^xsd:date")
                 else:
-                    filter_conditions.append(f"{var_name} {op} \"{val}\"")
+                    if isinstance(val, int) or val.isdigit():  # Se il valore è numerico, nessuna stringa
+                        filter_conditions.append(f"{var_name} {op} {val}")
+                    else:
+                        filter_conditions.append(f"{var_name} {op} \"{val}\"")
+
             else:   
-                sparql_query += f"\n    ?entity <{prop}> \"{val}\" ."
+                if val.lower() in ["true", "false"]:  # Se è un booleano, non mettere virgolette
+                    sparql_query += f"\n    ?entity <{prop}> {val.lower()} ."
+                else:
+                    sparql_query += f"\n    ?entity <{prop}> \"{val}\" ."
+
+    if notExistsFilters:
+        for filter in notExistsFilters:
+            prop = filter["property"]
+            sparql_query += f"\n    FILTER NOT EXISTS {{ ?entity <{prop}> ?var_{prop.split('/')[-1]} . }}"
+
 
     for triple in extra_triples:
         sparql_query += f"\n    {triple}"
@@ -107,13 +120,15 @@ def resolve_search_entity(
 
     if optionalFilters:
         for filter in optionalFilters:
-            prop, val = filter["property"], filter["value"]
-            sparql_query += f"\n    OPTIONAL {{ ?entity <{prop}> <{val}> . }}"
+            prop = filter["property"]
+            var_name = f"?var_{prop.split('/')[-1]}"  # Creiamo una variabile dinamica
+            sparql_query += f"\n    OPTIONAL {{ ?entity <{prop}> {var_name} . }}"
+
 
     if unions:
         union_query = []
         for union_group in unions:
-            union_block = " ".join([f"?entity <{f['property']}> \"{f['value']}\" ." for f in union_group])
+            union_block = " ".join([f"?entity <{f['property']}> <{f['value']}> ." for f in union_group])
             union_query.append(f"{{ ?entity a <{className}> . {union_block} }}")
         sparql_query += "\n    " + " UNION ".join(union_query)
 
@@ -154,6 +169,7 @@ type_defs = """
             className: String,
             filters: [FilterInput], 
             optionalFilters: [FilterInput], 
+            notExistsFilters: [FilterInput],
             unions: [[FilterInput]],  # Liste di liste per UNION
             orderBy: [OrderByInput],
             distinct: Boolean, 
