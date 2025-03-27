@@ -1,0 +1,58 @@
+default:
+  endpoint: "https://dbpedia.org/sparql"
+  prefixes:
+    rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+    dbo: "http://dbpedia.org/ontology/"
+    dbp: "http://dbpedia.org/property/"
+  query_syntax:
+    select_format: "SELECT {modifiers}{select_vars} WHERE {{ {main_pattern} {optional_patterns} {union_blocks} {filter_conditions} }}"
+    property_format: "{subject} <{property}> {object} ."
+    optional_format: "OPTIONAL {{ {pattern} }}"
+    union_format: "{{ {block} }}"             
+    filter_format: "FILTER ({condition})"
+    order_by: "ORDER BY {order_by_conditions}"
+    group_by: "GROUP BY {group_by_fields}"
+    having: "HAVING({having_conditions})"
+    limit: "LIMIT {limit}"
+    offset: "OFFSET {offset}"
+  options:
+    use_distinct: false
+    select_vars: ["?s"]
+    main_patterns:
+      - "?s a <{class_uri}> ."
+    optional_patterns: []
+    filter_conditions: []
+    group_by_fields: []
+    having_conditions: []
+    order_by_conditions: []
+  filter_template: 'FILTER ({condition})'
+  operator_map:
+    "=": '{var} = {value}'
+    "!=": '{var} != {value}'
+    ">": '{var} > {value}'
+    "<": '{var} < {value}'
+    ">=": '{var} >= {value}'
+    "<=": '{var} <= {value}'
+    REGEX: 'REGEX({var}, {value}, "i")'
+    LANG_EQUALS: 'LANG({var}) = {value}'
+  type_casting:
+    date: '^^xsd:date'
+  aggregation_syntax:
+    select_format: "SELECT {group_var} {aggregations} WHERE {{ {main_pattern} }} GROUP BY {group_var}"
+    aggregation_format: "({function}({variable}) AS ?{alias})"
+    group_by: "GROUP BY {group_var}"
+    having: "HAVING({having_conditions})"
+    order_by: "ORDER BY {order_by_conditions}"
+    limit: "LIMIT {limit}"
+    offset: "OFFSET {offset}"
+    property_format: "{subject} <{property}> {object} ."
+  compare_syntax:
+    select_format: "SELECT {select_vars} WHERE {{ {subject_blocks} {path_blocks} {filter_conditions} }}"
+    subject_format: "{var} a <{class_uri}> ."
+    property_format: "{subject} <{property}> {object} ."
+    filter_format: "FILTER ({condition})"
+
+
+
+
