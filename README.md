@@ -3,7 +3,7 @@
 **Graph2SPARQL** è un server GraphQL che traduce dinamicamente query GraphQL in query SPARQL, permettendo di interrogare qualsiasi RDF store configurato tramite un file YAML.
 
 L’obiettivo del progetto è fornire un’interfaccia di interrogazione GraphQL per accedere a knowledge base strutturate in RDF (come DBpedia, Wikidata o dataset custom), senza richiedere all’utente di conoscere la sintassi SPARQL, e mascherare la complessità di SPARQL dietro una sintassi
-GraphQL più semplice
+GraphQL più semplice.
 
 ## Funzionalità principali
 
@@ -413,7 +413,7 @@ query {
 #### SPARQL generato
 
 ```sparql
-SELECT * WHERE {
+SELECT ?s ?var_budget WHERE {
   ?s a <http://dbpedia.org/ontology/Film> .
   ?s <http://dbpedia.org/property/writer> ?var_step_0_writer .
   ?var_step_0_writer <http://dbpedia.org/property/deathDate> ?var_step_1_deathDate .
