@@ -116,6 +116,8 @@ type_defs = """
             paths: [JoinPathInput!]!,
             filters: [String],
             selectVars: [String!]
+            limit: Int,
+            offset: Int
         ): [JSON]
     }
 
@@ -127,14 +129,14 @@ type_defs = """
 
 
     input SubjectInput {
-    alias: String!
-    className: String!
+        alias: String!
+        className: String!
     }
 
     input JoinPathInput {
-    from: String!
-    path: [String!]!
-    alias: String!
+        from: String!
+        path: [String!]!
+        alias: String!
     }
 
     input FilterInput {

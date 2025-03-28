@@ -1,6 +1,7 @@
 from app.utils.config_loader import load_sparql_config
 from app.utils.uri_utils import uri_to_safe_var
 from SPARQLWrapper import SPARQLWrapper, JSON
+import re
 
 def resolve_search_entity(entity_class, filters=None, optionalFilters=None, unions=None, orderBy=None, groupBy=None, having=None, notExistsFilters=None, existsFilters=None, selectFields=None, distinct=False, limit=None, offset=None, rdf_store="default"):
     config = load_sparql_config(rdf_store)
@@ -62,6 +63,9 @@ def resolve_search_entity(entity_class, filters=None, optionalFilters=None, unio
                             val = step["value"]
                             if isinstance(val, str) and val.startswith("http"):
                                 value_formatted = f'<{val}>'
+                            elif re.match(r'^.+@[\w\-]+$', val):  
+                                literal, lang = val.rsplit("@", 1)
+                                value_formatted = f'"{literal}"@{lang}'
                             elif op in [">", "<", ">=", "<="]:
                                 value_formatted = f'"{val}"^^xsd:date'
                             else:
@@ -88,6 +92,9 @@ def resolve_search_entity(entity_class, filters=None, optionalFilters=None, unio
                 if op_template:
                     if isinstance(val, str) and val.startswith("http"):
                         value_formatted = f'<{val}>'
+                    elif re.match(r'^.+@[\w\-]+$', val):  
+                        literal, lang = val.rsplit("@", 1)
+                        value_formatted = f'"{literal}"@{lang}'
                     elif op in [">", "<", ">=", "<="]:
                         value_formatted = f'"{val}"^^xsd:date'
                     else:

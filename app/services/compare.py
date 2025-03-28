@@ -1,9 +1,10 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
 from app.utils.config_loader import load_sparql_config
 
-def graphql_compare_entities(_, info, subjects: list, paths: list, filters: list = None, selectVars: list = None):
+def graphql_compare_entities(_, info, subjects: list, paths: list, filters: list = None, selectVars: list = None, limit: int = None, offset: int = None):
     config = load_sparql_config()
     syntax = config["compare_syntax"]
+    
     prefixes = "\n".join([f"PREFIX {k}: <{v}>" for k, v in config["prefixes"].items()])
 
     def alias_to_var(alias):
@@ -38,6 +39,12 @@ def graphql_compare_entities(_, info, subjects: list, paths: list, filters: list
         path_blocks=path_blocks,
         filter_conditions=filter_conditions
     )
+
+    if limit is not None:
+        query += "\n" + syntax["limit"].format(limit=limit)
+    if offset is not None:
+        query += "\n" + syntax["offset"].format(offset=offset)
+
 
     sparql = SPARQLWrapper(config["endpoint"])
     sparql.setQuery(f"{prefixes}\n{query}")

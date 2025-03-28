@@ -524,6 +524,7 @@ Permette di specificare condizioni tra le entità (es. disuguaglianze), confront
   - `?film1 != ?film2`
   - `?actor1 != ?actor2`
 - `selectVars`: variabili da includere nella clausola `SELECT` (es. `["?film1", "?film2"]`)
+- `limit`, `offset` *(opzionali)* – Controllano paginazione e offset nei risultati
 
 #### Esempio di query GraphQL
 
@@ -543,6 +544,7 @@ query {
       "?actor1 != ?actor2"
     ]
     selectVars: ["?film1", "?film2"]
+    limit: 10
   )
 }
 ```

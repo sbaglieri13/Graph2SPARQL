@@ -52,7 +52,8 @@ default:
     subject_format: "{var} a <{class_uri}> ."
     property_format: "{subject} <{property}> {object} ."
     filter_format: "FILTER ({condition})"
-
+    limit: "LIMIT {limit}"
+    offset: "OFFSET {offset}"
 
 
 
