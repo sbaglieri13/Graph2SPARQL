@@ -5,7 +5,7 @@
 L’obiettivo del progetto è fornire un’interfaccia di interrogazione GraphQL per accedere a knowledge base strutturate in RDF (come DBpedia, Wikidata o dataset custom), senza richiedere all’utente di conoscere la sintassi SPARQL, e mascherare la complessità di SPARQL dietro una sintassi
 GraphQL più semplice.
 
-## Funzionalità principali
+## 🧠 Funzionalità principali
 
 - **Endpoint GraphQL unico** per interrogare dataset RDF.
 - **Traduzione automatica** delle query GraphQL in SPARQL.
@@ -18,9 +18,9 @@ GraphQL più semplice.
 - **Navigazione lungo path RDF arbitrari**, anche su più salti (`?film dbo:director ?d . ?d dbo:birthPlace ?city`).
 - **Personalizzazione completa della sintassi SPARQL**, operatori, prefissi, variabili e output tramite YAML.
 
-## Avvio del server
+## 🚀 Avvio del server
 
-### 1. Requisiti
+### 1️⃣ Requisiti
 
 Assicurati di avere installato:
 
@@ -40,7 +40,7 @@ pip install -r requirements.txt
 
 ---
 
-### 2. Avvio standard (utilizzando DBpedia)
+### 2️⃣ Avvio standard (utilizzando DBpedia)
 
 Se non specifichi un endpoint, il sistema userà quello definito come `default` in `sparql_config.yaml`.
 
@@ -52,7 +52,7 @@ GraphQL Playground sarà disponibile su: [http://127.0.0.1:8000/graphql](http://
 
 ---
 
-### 3. Avvio con endpoint personalizzato
+### 3️⃣ Avvio con endpoint personalizzato
 
 Puoi usare un qualsiasi SPARQL endpoint (es. Wikidata):
 
@@ -65,7 +65,7 @@ Il server userà questo endpoint temporaneamente, senza modificare il file YAML.
 Per maggiori dettagli sul file di configurazione consulta la sezione `File di configurazione sparql_config.yaml`, mentre per il cambio RDF Store consulta la sezione `Cambio RDF store a runtime`.
 
 
-## Struttura del progetto
+## 🗂️ Struttura del progetto
  
 Di seguito una panoramica della struttura del progetto:
 
@@ -88,7 +88,7 @@ Graph2SPARQL/
 │       └── sparql_config.yaml # Configurazione dell’endpoint, sintassi e mapping
 ```
 
-## File di configurazione `sparql_config.yaml`
+## ⚙️ File di configurazione `sparql_config.yaml`
 
 Il file `sparql_config.yaml` (in `app/config/`) consente di personalizzare completamente il comportamento del sistema per adattarsi a **qualsiasi RDF store**, senza modificare il codice Python.
 
@@ -277,7 +277,7 @@ compare_syntax:
 ---
 
 
-## Esplorazione del dataset: classi e proprietà disponibili
+## 🔍 Esplorazione del dataset: classi e proprietà disponibili
 
 Per orientarsi nel grafo RDF, Graph2SPARQL espone due metodi utili:
 
@@ -366,7 +366,7 @@ query {
 Questi metodi sono utili per esplorare il dataset RDF e permettono di costruire query corrette in `searchEntity`, `aggregateEntities` o `compareEntities` senza dover conoscere a priori tutte le classi e proprietà esistenti.
 
 
-## Guida completa all'utilizzo delle query GraphQL
+## 📘 Guida completa all'utilizzo delle query GraphQL
 
 ### `searchEntity`
 
@@ -577,8 +577,9 @@ SELECT ?film1 ?film2 WHERE {
 ]
 
 ```
+ℹ️ **Nota**: Per una raccolta di query di esempio (sia GraphQL che SPARQL), consulta il file [`Sample_Query.pdf`](./Sample_Query.pdf).
 
-## Mapping GraphQL → SPARQL
+## 🗺️ Mapping GraphQL → SPARQL
 
 Il sistema effettua una trasformazione automatica tra query GraphQL e SPARQL secondo regole predefinite.  
 Di seguito una tabella di corrispondenza tra i costrutti GraphQL supportati e i costrutti SPARQL generati.
@@ -605,7 +606,7 @@ Di seguito una tabella di corrispondenza tra i costrutti GraphQL supportati e i 
 
 Tutti i nomi variabili (come `?var_step_0_writer`) vengono generati automaticamente a partire dall'URI della proprietà.
 
-## Cambio RDF store a runtime
+## 🔄 Cambio RDF store a runtime
 
 Graph2SPARQL consente di collegarsi a qualsiasi SPARQL endpoint dinamicamente, **senza modificare il codice Python**.
 
