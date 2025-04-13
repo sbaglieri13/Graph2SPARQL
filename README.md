@@ -378,7 +378,6 @@ Permette di interrogare una classe RDF specificando proprietà, filtri, path, ag
 |-------------------|------------|-----------------------------------------------------------------------------|
 | `className`       | String     | URI della classe RDF da interrogare (es. `dbo:Film`)                        |
 | `selectFields`    | [String]   | URI delle proprietà RDF da includere nella SELECT                          |
-| `distinct`    | Boolean   | Se `true`, aggiunge `DISTINCT` alla SELECT per evitare duplicati                         |
 | `filters`         | [Object]   | Filtro su proprietà dirette o su path multipli                             |
 | `optionalFilters` | [Object]   | Proprietà opzionali (SPARQL `OPTIONAL`)                                    |
 | `notExistsFilters`, `existsFilters` | [Object] | Pattern con `FILTER NOT EXISTS` e `FILTER EXISTS`                  |
