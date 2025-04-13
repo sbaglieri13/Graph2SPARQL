@@ -15,7 +15,11 @@ def graphql_compare_entities(_, info, subjects: list, paths: list, filters: list
     subject_blocks = ""
     for s in subjects:
         var = alias_to_var(s["alias"])
-        triple = syntax["subject_format"].format(var=var, class_uri=s["className"])
+        rdf_type = config.get("rdf_type_property", "a")
+        if rdf_type != "a":
+            triple = f"{var} {rdf_type} <{s['className']}> ."
+        else:
+            triple = syntax["subject_format"].format(var=var, class_uri=s["className"])
         subject_blocks += f"{triple} "
 
     path_blocks = ""

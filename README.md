@@ -99,6 +99,7 @@ Il file `sparql_config.yaml` (in `app/config/`) consente di personalizzare compl
 ```yaml
 default:
   endpoint: "https://dbpedia.org/sparql"
+  rdf_type_property: "a"
   prefixes:
     rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     rdfs: "http://www.w3.org/2000/01/rdf-schema#"
@@ -108,6 +109,7 @@ default:
 
 - `default`: nome del profilo di configurazione.
 - `endpoint`: URL dell’endpoint SPARQL.
+- `rdf_type_property`: indica quale predicato usare per rappresentare il tipo di un'entità RDF.
 - `prefixes`: dizionario dei prefissi da usare nelle query.
 
 ---
@@ -155,7 +157,6 @@ query_syntax:
 
 ```yaml
 options:
-  use_distinct: false
   select_vars: ["?s"]
   main_patterns:
     - "?s a <{class_uri}> ."
@@ -168,7 +169,6 @@ options:
 
 | Chiave               | Descrizione |
 |----------------------|-------------|
-| `use_distinct`       | Aggiunge `DISTINCT` nel blocco SELECT |
 | `select_vars`        | Variabili di default nel SELECT |
 | `main_patterns`      | Triple SPARQL principali (usa `{class_uri}` come segnaposto) |
 | `optional_patterns`  | Triple opzionali fisse |
@@ -378,6 +378,7 @@ Permette di interrogare una classe RDF specificando proprietà, filtri, path, ag
 |-------------------|------------|-----------------------------------------------------------------------------|
 | `className`       | String     | URI della classe RDF da interrogare (es. `dbo:Film`)                        |
 | `selectFields`    | [String]   | URI delle proprietà RDF da includere nella SELECT                          |
+| `distinct`    | Boolean   | Se `true`, aggiunge `DISTINCT` alla SELECT per evitare duplicati                         |
 | `filters`         | [Object]   | Filtro su proprietà dirette o su path multipli                             |
 | `optionalFilters` | [Object]   | Proprietà opzionali (SPARQL `OPTIONAL`)                                    |
 | `notExistsFilters`, `existsFilters` | [Object] | Pattern con `FILTER NOT EXISTS` e `FILTER EXISTS`                  |
@@ -616,39 +617,58 @@ Graph2SPARQL consente di collegarsi a qualsiasi SPARQL endpoint dinamicamente, *
 ```yaml
 default:
   endpoint: "https://query.wikidata.org/sparql"
+  rdf_type_property: "wdt:P31"
   prefixes:
     wd: "http://www.wikidata.org/entity/"
     wdt: "http://www.wikidata.org/prop/direct/"
     rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     rdfs: "http://www.w3.org/2000/01/rdf-schema#"
   query_syntax:
-    select_format: |
-      SELECT {modifiers}{select_vars} WHERE {{
-        {main_pattern}
-        {optional_patterns}
-        {union_blocks}
-        {filter_conditions}
-      }}
+    select_format: "SELECT {modifiers}{select_vars} WHERE {{ {main_pattern} {optional_patterns} {union_blocks} {filter_conditions} }}"
     property_format: "{subject} <{property}> {object} ."
     optional_format: "OPTIONAL {{ {pattern} }}"
+    union_format: "{{ {block} }}"             
     filter_format: "FILTER ({condition})"
-    union_format: "{{ {block} }}"
+    order_by: "ORDER BY {order_by_conditions}"
     group_by: "GROUP BY {group_by_fields}"
-    having: "HAVING ({having_conditions})"
+    having: "HAVING({having_conditions})"
+    limit: "LIMIT {limit}"
+    offset: "OFFSET {offset}"
+  options:
+    select_vars: ["?s"]
+    main_patterns:
+      - "?s wdt:P31 <{class_uri}> ."
+    optional_patterns: []
+    filter_conditions: []
+    group_by_fields: []
+    having_conditions: []
+    order_by_conditions: []
+  filter_template: 'FILTER ({condition})'
+  operator_map:
+    "=": '{var} = {value}'
+    "!=": '{var} != {value}'
+    ">": '{var} > {value}'
+    "<": '{var} < {value}'
+    ">=": '{var} >= {value}'
+    "<=": '{var} <= {value}'
+    REGEX: 'REGEX({var}, {value}, "i")'
+    LANG_EQUALS: 'LANG({var}) = {value}'
+  aggregation_syntax:
+    select_format: "SELECT {group_var} {aggregations} WHERE {{ {main_pattern} }} GROUP BY {group_var}"
+    aggregation_format: "({function}({variable}) AS ?{alias})"
+    group_by: "GROUP BY {group_var}"
+    having: "HAVING({having_conditions})"
     order_by: "ORDER BY {order_by_conditions}"
     limit: "LIMIT {limit}"
     offset: "OFFSET {offset}"
-  operator_map:
-    "=": "{var} = {value}"
-    "!=": "{var} != {value}"
-    REGEX: "REGEX({var}, {value}, \"i\")"
-    LANG_EQUALS: "LANG({var}) = {value}"
-  options:
-    language_filter: true
-    default_language: "en"
-    regex_filter: true
-    main_patterns:
-      - "?s wdt:P31 <{class_uri}> ."
+    property_format: "{subject} <{property}> {object} ."
+  compare_syntax:
+    select_format: "SELECT {select_vars} WHERE {{ {subject_blocks} {path_blocks} {filter_conditions} }}"
+    subject_format: "{var} a <{class_uri}> ."
+    property_format: "{subject} <{property}> {object} ."
+    filter_format: "FILTER ({condition})"
+    limit: "LIMIT {limit}"
+    offset: "OFFSET {offset}"
 ```
 
 3. Avvia il server specificando questo endpoint:
@@ -659,7 +679,7 @@ python server.py --endpoint "https://query.wikidata.org/sparql"
 
 ---
 
-### Esempio di query GraphQL per Wikidata
+### Esempio #1 di query GraphQL per Wikidata
 
 ```graphql
 query {
@@ -682,6 +702,35 @@ SELECT ?s ?var_P569 WHERE {
 }
 LIMIT 5
 ```
+
+### Esempio #2 di query GraphQL per Wikidata
+
+```graphql
+query{
+  aggregateEntities(
+    className: "http://www.wikidata.org/entity/Q5"  # Persone
+    groupBy: "http://www.wikidata.org/prop/direct/P21"  # genere
+    aggregation: {
+      function: "COUNT"
+      alias: "numPeople"
+      on: "*"
+    }
+    limit: 5
+  )
+}
+```
+
+### SPARQL generato
+
+```sparql
+SELECT ?P21 (COUNT(*) AS ?numPeople) WHERE {
+  ?s wdt:P31 <http://www.wikidata.org/entity/Q5> .
+  ?s <http://www.wikidata.org/prop/direct/P21> ?P21 .
+}
+GROUP BY ?P21
+LIMIT 5
+```
+
 
 
 

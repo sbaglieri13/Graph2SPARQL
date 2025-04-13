@@ -11,7 +11,10 @@ def graphql_aggregate_entities(_, info, groupBy: str, aggregation: dict, having:
     main_pattern = f"?s <{groupBy}> {group_var} ."
 
     if className:
-        main_pattern = f"?s a <{className}> . " + main_pattern
+        rdf_type = config.get("rdf_type_property", "a")
+        type_triple = f"?s {rdf_type} <{className}> ." if rdf_type != "a" else f"?s a <{className}> ."
+        main_pattern = f"{type_triple} {main_pattern}"
+
 
     agg_property = aggregation.get("on", "*")
     agg_varname = "*" if agg_property == "*" else uri_to_var(agg_property)

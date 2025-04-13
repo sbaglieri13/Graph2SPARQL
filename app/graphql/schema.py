@@ -8,17 +8,20 @@ from app.services.entity_search import resolve_search_entity
 query = QueryType()
 CONFIG = load_sparql_config()
 
-
 @query.field("availableClasses")
 def resolve_available_classes(*_, namespaceFilter: str = None):
     config = load_sparql_config()
     endpoint = config["endpoint"]
 
-    sparql_query = """
-    SELECT DISTINCT ?class WHERE {
-        ?s a ?class .
-    }
+    rdf_type = config.get("rdf_type_property", "a")
+    type_triple = f"?s {rdf_type} ?class ." if rdf_type != "a" else "?s a ?class ."
+
+    sparql_query = f"""
+    SELECT DISTINCT ?class WHERE {{
+        {type_triple}
+    }}
     """
+
     print("\nGenerated SPARQL Query:\n", sparql_query)
     sparql_results = execute_sparql_query(sparql_query, endpoint)
     if not sparql_results:
@@ -38,12 +41,16 @@ def resolve_available_properties(*_, className: str):
     config = load_sparql_config()
     endpoint = config["endpoint"]
 
+    rdf_type = config.get("rdf_type_property", "a")
+    type_triple = f"?s {rdf_type} <{className}> ;" if rdf_type != "a" else f"?s a <{className}> ;"
+
     sparql_query = f"""
     SELECT DISTINCT ?property WHERE {{
-        ?s a <{className}> ;
-           ?property ?o .
+        {type_triple}
+        ?property ?o .
     }}
     """
+
     print("\nGenerated SPARQL Query:\n", sparql_query)
     sparql_results = execute_sparql_query(sparql_query, endpoint)
 
@@ -59,6 +66,7 @@ def resolve_available_properties(*_, className: str):
         "className": className,
         "fields": list(properties)
     }
+
 
 
 @query.field("searchEntity")
